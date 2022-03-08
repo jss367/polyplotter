@@ -21,12 +21,20 @@ def plotpoly(obj):
     elif isinstance(obj, dict):
         for _, v in obj.items():
             plotpoly(v)
-    elif isinstance(obj, List):
+    elif isinstance(obj, list): # or List?
         try:
             plt.plot(*zip(*obj))
         except TypeError:
             for item in obj:
                 plotpoly(item)
+    elif isinstance(obj, tuple):
+        """
+        example:
+        x = np.array([1, 3, 5, 7, 9, 6, 4, 1])
+        y = np.array([1, 9, 8, 6, 4, 3, 2, 1])
+        plotpoly(x, y)
+        """
+        plt.plot(*obj)
     else:
         print("type not understood")
         print(type(obj))
