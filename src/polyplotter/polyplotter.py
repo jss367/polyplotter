@@ -6,25 +6,37 @@ from shapely.geometry.multipolygon import MultiPolygon
 from shapely.geometry.polygon import Polygon
 
 
-def plotpoly(obj):
+def plotpoly(obj, verbose=False):
     """ plotpoly figure outs what the obj is and routes it to the appropriate plotter()
     How often do I get lists? And what should I do in those cases?
     TODO: If dictionary, plot every key?
     If it's a list, should I try to plot it as a whole, and then if that doesn't work, iterate through the list and plot what i can?
     """
     if isinstance(obj, np.ndarray):
+        if verbose:
+            print("np.ndarray detected")
         plot_ndarray_poly(obj)
     elif isinstance(obj, Polygon):
+        if verbose:
+            print("shapely Polygon detected")
         plot_shapely_poly(obj)
     elif isinstance(obj, MultiPolygon):
+        if verbose:
+            print("shapely MultiPolygon detected")
         plot_shapely_multipoly(obj)
     elif isinstance(obj, dict):
+        if verbose:
+            print("dict detected - running recursively on items")
         for _, v in obj.items():
             plotpoly(v)
-    elif isinstance(obj, list): # or List?
+    elif isinstance(obj, list):  # or List?
+        if verbose:
+            print("list detected")
         try:
             plt.plot(*zip(*obj))
         except TypeError:
+            if verbose:
+                print("trying recurively on elements of list")
             for item in obj:
                 plotpoly(item)
     elif isinstance(obj, tuple):
@@ -36,9 +48,8 @@ def plotpoly(obj):
         """
         plt.plot(*obj)
     else:
-        print("type not understood")
-        print(type(obj))
-        print(obj)
+        print(f"type {type(obj)} not expected")
+        print(f"{obj=}")
 
 
 def plot_ndarray_poly(arr: np.ndarray):
