@@ -6,7 +6,7 @@ A repo for plotting polygons in Python
 Recommended usage:
 
 ```
-from ployplotter import plotpoly as p
+from polyplotter import plotpoly as p
 p(my_polygon)
 ```
 
