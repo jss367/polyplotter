@@ -39,6 +39,10 @@ def plotpoly(obj, verbose=False):
                 print("trying recurively on elements of list")
             for item in obj:
                 plotpoly(item)
+    elif isinstance(obj, str):
+        # for example, wkt
+        poly = shapely.wkt.loads(obj)
+        plot_shapely_poly(poly)
     elif isinstance(obj, tuple):
         """
         example:
