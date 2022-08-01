@@ -41,6 +41,8 @@ def plotpoly(obj, verbose=False):
                 plotpoly(item)
     elif isinstance(obj, str):
         # for example, wkt
+        if verbose:
+            print("str detected - checking if wkt")
         poly = shapely.wkt.loads(obj)
         plot_shapely_poly(poly)
     elif isinstance(obj, tuple):
