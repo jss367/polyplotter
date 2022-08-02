@@ -3,7 +3,7 @@ import shapely
 from matplotlib import pyplot as plt
 from shapely.geometry.multipolygon import MultiPolygon
 from shapely.geometry.polygon import Polygon
-
+from shapely.geometry.collection import GeometryCollection
 
 def plotpoly(obj, verbose=False):
     """ plotpoly figure outs what the obj is and routes it to the appropriate plotter()
@@ -23,6 +23,10 @@ def plotpoly(obj, verbose=False):
         if verbose:
             print("shapely MultiPolygon detected")
         plot_shapely_multipoly(obj)
+    elif isinstance(obj, GeometryCollection):
+        if verbose:
+            print("shapely GeometryCollection detected")
+        plot_shapely_geometry_collection(obj)
     elif isinstance(obj, dict):
         if verbose:
             print("dict detected - running recursively on items")
@@ -82,3 +86,8 @@ def plot_shapely_multipoly(multipoly, reverse_y=True):
 
     plt.gca().axis("equal")
     plt.show()
+
+def plot_shapely_geometry_collection(gc):
+    for geom in gc.geoms:
+        print("Need to plot this")
+    
