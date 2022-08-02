@@ -1,6 +1,5 @@
-from typing import List
-
 import numpy as np
+import shapely
 from matplotlib import pyplot as plt
 from shapely.geometry.multipolygon import MultiPolygon
 from shapely.geometry.polygon import Polygon
@@ -29,7 +28,7 @@ def plotpoly(obj, verbose=False):
             print("dict detected - running recursively on items")
         for _, v in obj.items():
             plotpoly(v)
-    elif isinstance(obj, list):  # or List?
+    elif isinstance(obj, list):
         if verbose:
             print("list detected")
         try:
@@ -46,8 +45,8 @@ def plotpoly(obj, verbose=False):
         try:
             poly = shapely.wkt.loads(obj)
             plot_shapely_poly(poly)
-        except WKTReadingError:
-            raise ValueError(f"String not wkt: {obj=}")
+        except Exception as e:  # WKTReadingError
+            raise ValueError(f"String not wkt: {obj=}") from e
     elif isinstance(obj, tuple):
         """
         example:
