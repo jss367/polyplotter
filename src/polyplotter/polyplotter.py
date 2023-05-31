@@ -65,7 +65,7 @@ def plotpoly(obj, verbose=False):
 
 
 def plot_ndarray_poly(arr: np.ndarray):
-    """ If it's a numpy array, we'll simply wrap in in a shapely geometry first. """
+    """ If it's a numpy array, we'll wrap it in a shapely geometry first. """
     poly = Polygon(np.concatenate(arr, axis=0))
     plot_shapely_poly(poly)
 
