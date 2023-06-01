@@ -5,6 +5,7 @@ import matplotlib
 import numpy as np
 import pytest
 from shapely import wkt  # required to access shapely.wkt
+from shapely.geometry import GeometryCollection, MultiPolygon, Polygon
 
 from polyplotter import plotpoly as p
 
@@ -49,6 +50,53 @@ def test_ndarray_coords():
         dtype=np.int32,
     )
     p(coords)
+
+
+def test_plot_ndarray_poly():
+    arr = np.array([[1, 1], [2, 1], [2, 2], [1, 2], [1, 1]])
+    p(arr)
+
+
+def test_plot_shapely_poly():
+    poly = Polygon([[1, 1], [2, 1], [2, 2], [1, 2], [1, 1]])
+    p(poly)
+
+
+def test_plot_shapely_multipoly():
+    multipoly = MultiPolygon(
+        [Polygon([[1, 1], [2, 1], [2, 2], [1, 2], [1, 1]]), Polygon([[3, 3], [4, 3], [4, 4], [3, 4], [3, 3]])]
+    )
+    p(multipoly)
+
+
+def test_plot_shapely_geometry_collection():
+    gc = GeometryCollection(
+        [Polygon([[1, 1], [2, 1], [2, 2], [1, 2], [1, 1]]), Polygon([[3, 3], [4, 3], [4, 4], [3, 4], [3, 3]])]
+    )
+    p(gc)
+
+
+def test_plot_dict():
+    dict_obj = {
+        "poly1": Polygon([[1, 1], [2, 1], [2, 2], [1, 2], [1, 1]]),
+        "poly2": Polygon([[3, 3], [4, 3], [4, 4], [3, 4], [3, 3]]),
+    }
+    p(dict_obj)
+
+
+def test_plot_list():
+    list_obj = [Polygon([[1, 1], [2, 1], [2, 2], [1, 2], [1, 1]]), Polygon([[3, 3], [4, 3], [4, 4], [3, 4], [3, 3]])]
+    p(list_obj)
+
+
+def test_plot_str():
+    wkt_str = "POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))"
+    p(wkt_str)
+
+
+def test_plot_tuple():
+    tuple_obj = ([1, 2, 3, 4], [1, 2, 3, 4])
+    p(tuple_obj)
 
 
 if __name__ == "__main__":
