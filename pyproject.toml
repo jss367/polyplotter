@@ -21,10 +21,9 @@ classifiers = [
     "Operating System :: OS Independent"
 ]
 python = ">=3.6"
+dependencies = [
+  "matplotlib>=3.6.0"
+]
 
 [project.urls]
 bug_tracker = "https://github.com/jss367/polyplotter/issues"
-
-
-[project.dependencies]
-matplotlib = "^3.6.0"
