@@ -1,12 +1,13 @@
 import numpy as np
 import shapely
 from matplotlib import pyplot as plt
+from shapely.geometry.collection import GeometryCollection
 from shapely.geometry.multipolygon import MultiPolygon
 from shapely.geometry.polygon import Polygon
-from shapely.geometry.collection import GeometryCollection
+
 
 def plotpoly(obj, verbose=False):
-    """ plotpoly figure outs what the obj is and routes it to the appropriate plotter()
+    """plotpoly figure outs what the obj is and routes it to the appropriate plotter()
     How often do I get lists? And what should I do in those cases?
     TODO: If dictionary, plot every key?
     If it's a list, should I try to plot it as a whole, and then if that doesn't work, iterate through the list and plot what i can?
@@ -65,8 +66,12 @@ def plotpoly(obj, verbose=False):
 
 
 def plot_ndarray_poly(arr: np.ndarray):
-    """ If it's a numpy array, we'll wrap it in a shapely geometry first. """
-    poly = Polygon(np.concatenate(arr, axis=0))
+    """If it's a numpy array, we'll wrap it in a shapely geometry first."""
+    try:
+        poly = Polygon(arr)
+    except Exception:
+        # TODO add the test case that requires this
+        poly = Polygon(np.concatenate(arr, axis=0))
     plot_shapely_poly(poly)
 
 
@@ -87,7 +92,7 @@ def plot_shapely_multipoly(multipoly, reverse_y=True):
     plt.gca().axis("equal")
     plt.show()
 
+
 def plot_shapely_geometry_collection(gc):
     for geom in gc.geoms:
         print("Need to plot this")
-    
