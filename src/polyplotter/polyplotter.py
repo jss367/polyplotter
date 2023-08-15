@@ -1,90 +1,54 @@
 import numpy as np
 import shapely
 from matplotlib import pyplot as plt
-from shapely.geometry.collection import GeometryCollection
-from shapely.geometry.multipolygon import MultiPolygon
-from shapely.geometry.polygon import Polygon
+from shapely import wkt
+from shapely.geometry import GeometryCollection, MultiPolygon, Polygon
 
 
-def plotpoly(obj, verbose=False):
-    """plotpoly figure outs what the obj is and routes it to the appropriate plotter()
-    How often do I get lists? And what should I do in those cases?
-    TODO: If dictionary, plot every key?
-    If it's a list, should I try to plot it as a whole, and then if that doesn't work, iterate through the list and plot what i can?
-    """
-    if isinstance(obj, np.ndarray):
+def plotpoly(obj, verbose=False, invert_y=True):
+    """Delegate plotting to the appropriate function based on the object type."""
+    plot_funcs = {
+        np.ndarray: plot_ndarray_poly,
+        Polygon: plot_shapely_poly,
+        MultiPolygon: plot_shapely_multipoly,
+        GeometryCollection: plot_shapely_geometry_collection,
+        dict: plot_dict,
+        list: plot_list,
+        str: plot_str,
+        tuple: plot_tuple,
+    }
+
+    plot_func = plot_funcs.get(type(obj))
+
+    if plot_func:
         if verbose:
-            print("np.ndarray detected")
-        plot_ndarray_poly(obj)
-    elif isinstance(obj, Polygon):
-        if verbose:
-            print("shapely Polygon detected")
-        plot_shapely_poly(obj)
-    elif isinstance(obj, MultiPolygon):
-        if verbose:
-            print("shapely MultiPolygon detected")
-        plot_shapely_multipoly(obj)
-    elif isinstance(obj, GeometryCollection):
-        if verbose:
-            print("shapely GeometryCollection detected")
-        plot_shapely_geometry_collection(obj)
-    elif isinstance(obj, dict):
-        if verbose:
-            print("dict detected - running recursively on items")
-        for _, v in obj.items():
-            plotpoly(v)
-    elif isinstance(obj, list):
-        if verbose:
-            print("list detected")
-        try:
-            plt.plot(*zip(*obj))
-        except TypeError:
-            if verbose:
-                print("trying recurively on elements of list")
-            for item in obj:
-                plotpoly(item)
-    elif isinstance(obj, str):
-        # for example, wkt
-        if verbose:
-            print("str detected - checking if wkt")
-        try:
-            poly = shapely.wkt.loads(obj)
-            plot_shapely_poly(poly)
-        except Exception as e:  # WKTReadingError
-            raise ValueError(f"String not wkt: {obj=}") from e
-    elif isinstance(obj, tuple):
-        """
-        example:
-        x = np.array([1, 3, 5, 7, 9, 6, 4, 1])
-        y = np.array([1, 9, 8, 6, 4, 3, 2, 1])
-        plotpoly(x, y)
-        """
-        plt.plot(*obj)
+            print(f"{type(obj).__name__} detected")
+        plot_func(obj, verbose, invert_y)
     else:
         print(f"type {type(obj)} not expected")
         print(f"{obj=}")
 
 
-def plot_ndarray_poly(arr: np.ndarray):
-    """If it's a numpy array, we'll wrap it in a shapely geometry first."""
+def plot_ndarray_poly(arr: np.ndarray, verbose=False, invert_y=True):
+    """Plot polygon from a numpy array."""
     try:
         poly = Polygon(arr)
     except Exception:
-        # TODO add the test case that requires this
         poly = Polygon(np.concatenate(arr, axis=0))
-    plot_shapely_poly(poly)
+    plot_shapely_poly(poly, invert_y)
 
 
-def plot_shapely_poly(poly, reverse_y=True):
-    # x, y = poly.exterior.xy
-    if reverse_y:
+def plot_shapely_poly(poly, verbose=False, invert_y=True):
+    """Plot a shapely Polygon."""
+    if invert_y:
         plt.gca().invert_yaxis()
     plt.plot(*poly.exterior.xy)
     plt.show()
 
 
-def plot_shapely_multipoly(multipoly, reverse_y=True):
-    if reverse_y:
+def plot_shapely_multipoly(multipoly, verbose=False, invert_y=True):
+    """Plot a shapely MultiPolygon."""
+    if invert_y:
         plt.gca().invert_yaxis()
     for geom in multipoly.geoms:
         plt.plot(*geom.exterior.xy)
@@ -93,6 +57,38 @@ def plot_shapely_multipoly(multipoly, reverse_y=True):
     plt.show()
 
 
-def plot_shapely_geometry_collection(gc):
+def plot_shapely_geometry_collection(gc, verbose=False, invert_y=True):
+    """Plot a shapely GeometryCollection."""
     for geom in gc.geoms:
         print("Need to plot this")
+
+
+def plot_dict(obj, verbose=False, invert_y=True):
+    """Plot polygons from dictionary values."""
+    for _, v in obj.items():
+        plotpoly(v, verbose, invert_y)
+
+
+def plot_list(obj, verbose=False, invert_y=True):
+    """Plot polygons from list elements."""
+    try:
+        for item in obj:
+            plot_shapely_poly(item, invert_y)
+    except TypeError:
+        for item in obj:
+            plotpoly(item, invert_y)
+
+
+def plot_str(obj, verbose=False, invert_y=True):
+    """Plot polygon from WKT string."""
+    try:
+        poly = wkt.loads(obj)
+        plot_shapely_poly(poly, invert_y)
+    except wkt.WKTReadingError as e:
+        raise ValueError(f"String not wkt: {obj=}") from e
+
+
+def plot_tuple(obj, verbose=False, invert_y=True):
+    """Plot polygon from tuple."""
+    plt.plot(*obj)
+    plt.show()

@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "polyplotter"
-version = "0.0.7"
+version = "0.1.1"
 description = "A quick way to plot polygons"
 readme = "README.md"
 authors = [
@@ -19,7 +19,7 @@ classifiers = [
     "Operating System :: OS Independent"
 ]
 dependencies = [
-  "matplotlib>=3.6.0"
+  "matplotlib>=3.5.0"
 ]
 
 [project.urls]
