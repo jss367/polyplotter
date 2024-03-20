@@ -3,6 +3,8 @@ from matplotlib import pyplot as plt
 from shapely import wkt
 from shapely.geometry import GeometryCollection, MultiPolygon, Polygon
 
+from polyplotter.exceptions import PlotPolyShapeError
+
 
 def plotpoly(obj, verbose=False, invert_y=True):
     """Plot polygons from various input types."""
@@ -34,12 +36,33 @@ def plotpoly(obj, verbose=False, invert_y=True):
 
 
 def plot_ndarray_poly(arr: np.ndarray, verbose=False, invert_y=True):
-    """Plot polygon from a numpy array."""
+    """Plot a polygon from a NumPy array.
+
+    Args:
+        arr: The NumPy array representing coordinates.
+        verbose: Controls whether to print messages.
+        invert_y: Inverts the y-axis if True.
+
+    Raises:
+        PlotPolyShapeError: If the array cannot be directly converted to a closed polygon.
+    """
+
+    if arr.ndim != 2 or arr.shape[1] != 2:
+        raise PlotPolyShapeError("NumPy array must have shape (n, 2) for plotting as a polygon.")
+
     try:
+        # Attempt to create a closed polygon directly
         poly = Polygon(arr)
-    except Exception:
-        poly = Polygon(np.concatenate(arr, axis=0))
-    plot_shapely_poly(poly, invert_y)
+        plot_shapely_poly(poly, invert_y)
+
+    except ValueError:  # Array might not form a closed polygon
+        if verbose:
+            print("Array doesn't form a closed polygon. Trying to concatenate...")
+        try:
+            poly = Polygon(np.concatenate(arr, axis=0))
+            plot_shapely_poly(poly, invert_y)
+        except ValueError:
+            raise PlotPolyShapeError("NumPy array is not compatible with polygon plotting.")
 
 
 def plot_shapely_poly(poly, verbose=False, invert_y=True):
@@ -86,6 +109,8 @@ def plot_str(obj, verbose=False, invert_y=True):
         plot_shapely_poly(poly, verbose=verbose, invert_y=invert_y)
     except wkt.WKTReadingError as e:
         raise ValueError(f"String not wkt: {obj=}") from e
+    except (ValueError, TypeError) as e:
+        print(f"Error converting input to polygon: {e}")
 
 
 def plot_tuple(obj, verbose=False, invert_y=True):
