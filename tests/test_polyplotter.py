@@ -1,6 +1,7 @@
 """
 TODO: Add more tests
 """
+
 import matplotlib
 import numpy as np
 import pytest
@@ -33,6 +34,11 @@ def test_simple_poly():
     empty_shape = wkt.loads("GEOMETRYCOLLECTION EMPTY")
     empty_geometry_collection = empty_shape.intersection(simple_poly)
     p(empty_geometry_collection)
+
+
+def test_list_coords():
+    polygon_coords = [(0, 0), (5, 0), (5, 5), (0, 5)]
+    p(polygon_coords)
 
 
 def test_ndarray_coords():
