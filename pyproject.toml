@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "polyplotter"
-version = "0.2.1"
+version = "0.3.0"
 description = "A quick way to plot polygons"
 readme = "README.md"
 authors = [

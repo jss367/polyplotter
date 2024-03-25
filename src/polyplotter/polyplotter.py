@@ -9,19 +9,33 @@ from polyplotter.exceptions import PlotPolyShapeError
 def plotpoly(obj, verbose=False, invert_y=True):
     """Plot polygons from various input types."""
     try:
+        poly = None
         # Conversion to Shapely objects
         if isinstance(obj, np.ndarray):
             poly = Polygon(obj)
         elif isinstance(obj, dict):
             poly = MultiPolygon([Polygon(v) for v in obj.values()])
         elif isinstance(obj, list):
-            poly = MultiPolygon([Polygon(item) for item in obj])
+            # Check if the list contains Polygon objects directly
+            if all(isinstance(item, Polygon) for item in obj):
+                poly = MultiPolygon(obj)
+            elif all(isinstance(item, str) for item in obj):  # List of WKT strings
+                poly = MultiPolygon([wkt.loads(item) for item in obj])
+            else:  # Assume list of coordinates
+                poly = Polygon(obj)
         elif isinstance(obj, str):
             poly = wkt.loads(obj)
         elif isinstance(obj, tuple):
-            poly = Polygon(obj)
+            # Handling tuple as coordinates for a polygon
+            # Assuming the tuple represents separate lists of x and y coordinates
+            poly = Polygon(
+                zip(*obj)
+            )  # Convert to list of (x, y) pairs and create Polygon
         else:  # Already a Shapely geometry
             poly = obj
+
+        if poly is None:
+            raise ValueError("Unsupported object type for plotting.")
 
         # Handle GeometryCollections separately
         if isinstance(poly, GeometryCollection):
@@ -32,7 +46,7 @@ def plotpoly(obj, verbose=False, invert_y=True):
             plot_shapely_multipoly(poly, verbose, invert_y)
 
     except Exception as e:  # Broad exception for flexibility
-        print(f"Error converting input to polygon: {e}")
+        raise ValueError(f"Error converting input to polygon: {e}") from e
 
 
 def plot_ndarray_poly(arr: np.ndarray, verbose=False, invert_y=True):
@@ -48,7 +62,9 @@ def plot_ndarray_poly(arr: np.ndarray, verbose=False, invert_y=True):
     """
 
     if arr.ndim != 2 or arr.shape[1] != 2:
-        raise PlotPolyShapeError("NumPy array must have shape (n, 2) for plotting as a polygon.")
+        raise PlotPolyShapeError(
+            "NumPy array must have shape (n, 2) for plotting as a polygon."
+        )
 
     try:
         # Attempt to create a closed polygon directly
@@ -62,7 +78,9 @@ def plot_ndarray_poly(arr: np.ndarray, verbose=False, invert_y=True):
             poly = Polygon(np.concatenate(arr, axis=0))
             plot_shapely_poly(poly, invert_y)
         except ValueError:
-            raise PlotPolyShapeError("NumPy array is not compatible with polygon plotting.")
+            raise PlotPolyShapeError(
+                "NumPy array is not compatible with polygon plotting."
+            )
 
 
 def plot_shapely_poly(poly, verbose=False, invert_y=True):
