@@ -123,7 +123,7 @@ def test_plot_tuple():
     p(tuple_obj)
 
 
-@pytest.mark.skip(reason="This test requires manual verification and is not automated.")
+# @pytest.mark.skip(reason="This test requires manual verification and is not automated.")
 def test_polygon_with_hole_MANUAL_TEST():
     """
     This test must be verified manually. I skip it by default.
@@ -138,6 +138,35 @@ def test_polygon_with_hole_MANUAL_TEST():
 
     # Plot the polygon
     p(poly_with_hole, verbose=True, invert_y=False)
+
+    # Instructions for manual verification;
+    print("Verify the plotted polygon does NOT fill in the specified hole.")
+    plt.show()
+
+
+# @pytest.mark.skip(reason="This test requires manual verification and is not automated.")
+def test_list_with_holes_MANUAL_TEST():
+    """
+    This test must be verified manually. I skip it by default.
+    """
+    matplotlib.use("TkAgg")
+    # Define the exterior of the polygon
+    exterior1 = [(0, 0), (5, 0), (5, 5), (0, 5), (0, 0)]
+    # Define a hole in the polygon
+    hole1 = [(1, 1), (4, 1), (4, 4), (1, 4), (1, 1)]
+    # Create the polygon with the hole
+    poly_with_hole1 = Polygon(shell=exterior1, holes=[hole1])
+
+    exterior2 = [(10, 10), (15, 10), (15, 15), (10, 15), (10, 10)]
+    # Define a hole in the polygon
+    hole2 = [(11, 11), (14, 11), (14, 14), (11, 14), (11, 11)]
+    # Create the polygon with the hole
+    poly_with_hole2 = Polygon(shell=exterior2, holes=[hole2])
+
+    list_with_holes = [poly_with_hole1, poly_with_hole2]
+
+    # Plot the polygon
+    p(list_with_holes, verbose=True, invert_y=False)
 
     # Instructions for manual verification;
     print("Verify the plotted polygon does NOT fill in the specified hole.")

@@ -1,148 +1,88 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from shapely import wkt
 from shapely.geometry import GeometryCollection, MultiPolygon, Polygon
-
-from polyplotter.exceptions import PlotPolyShapeError
+from shapely.wkt import loads as load_wkt
 
 
 def plotpoly(obj, verbose=False, invert_y=True):
     """Plot polygons from various input types."""
     try:
-        poly = None
-        # Conversion to Shapely objects
-        if isinstance(obj, np.ndarray):
-            poly = Polygon(obj)
-        elif isinstance(obj, dict):
-            poly = MultiPolygon([Polygon(v) for v in obj.values()])
+        # Setup plot
+        fig, ax = plt.subplots()
+        if invert_y:
+            ax.invert_yaxis()
+
+        # Plotting directly based on type
+        if isinstance(obj, (Polygon, MultiPolygon, GeometryCollection)):
+            plot_shapely_entity(ax, obj)
         elif isinstance(obj, list):
-            # Check if the list contains Polygon objects directly
-            if all(isinstance(item, Polygon) for item in obj):
-                poly = MultiPolygon(obj)
-            elif all(isinstance(item, str) for item in obj):  # List of WKT strings
-                poly = MultiPolygon([wkt.loads(item) for item in obj])
-            else:  # Assume list of coordinates
-                poly = Polygon(obj)
+            if not obj:  # Check if the list is empty
+                raise ValueError("The input list is empty.")
+            if all(isinstance(item, str) for item in obj):
+                try:
+                    for wkt_str in obj:
+                        plot_shapely_entity(ax, load_wkt(wkt_str))
+                except wkt.WKTReadingError as e:
+                    raise ValueError(f"Invalid WKT string detected: {e}")
+            elif all(isinstance(item, tuple) for item in obj):
+                try:
+                    plot_shapely_entity(ax, Polygon(obj))
+                except ValueError as e:
+                    raise ValueError(f"Invalid tuple list for polygon creation: {e}")
+            elif all(isinstance(item, Polygon) for item in obj):
+                for polygon in obj:
+                    plot_shapely_entity(ax, polygon)
+            else:
+                raise ValueError("List contains unsupported or mixed content types.")
+        elif isinstance(obj, np.ndarray):
+            if obj.ndim != 2 or obj.shape[1] != 2:
+                raise ValueError(
+                    "NumPy array must be of shape (n, 2) for polygon vertices."
+                )
+            plot_shapely_entity(ax, Polygon(obj))
+        elif isinstance(obj, dict):
+            if not obj:
+                raise ValueError("The input dictionary is empty.")
+            for v in obj.values():
+                plot_shapely_entity(ax, Polygon(v))
         elif isinstance(obj, str):
-            poly = wkt.loads(obj)
+            try:
+                plot_shapely_entity(ax, load_wkt(obj))
+            except wkt.WKTReadingError as e:
+                raise ValueError(f"Invalid WKT string: {e}")
         elif isinstance(obj, tuple):
-            # Handling tuple as coordinates for a polygon
-            # Assuming the tuple represents separate lists of x and y coordinates
-            poly = Polygon(
-                zip(*obj)
-            )  # Convert to list of (x, y) pairs and create Polygon
-        else:  # Already a Shapely geometry
-            poly = obj
+            if len(obj) != 2 or any(not isinstance(i, (list, np.ndarray)) for i in obj):
+                raise ValueError(
+                    "Tuple must be of two lists or arrays of x and y coordinates."
+                )
+            plot_shapely_entity(ax, Polygon(zip(*obj)))
+        else:
+            raise ValueError(f"Unsupported object type: {type(obj)}.")
 
-        if poly is None:
-            raise ValueError("Unsupported object type for plotting.")
+        plt.gca().set_aspect("equal", adjustable="box")
+        plt.show()
 
-        # Handle GeometryCollections separately
-        if isinstance(poly, GeometryCollection):
-            plot_shapely_geometry_collection(poly, verbose, invert_y)
-        elif isinstance(poly, Polygon):
-            plot_shapely_poly(poly, verbose, invert_y)
-        elif isinstance(poly, MultiPolygon):
-            plot_shapely_multipoly(poly, verbose, invert_y)
-
-    except Exception as e:  # Broad exception for flexibility
+    except Exception as e:
         raise ValueError(f"Error converting input to polygon: {e}") from e
 
 
-def plot_ndarray_poly(arr: np.ndarray, verbose=False, invert_y=True):
-    """Plot a polygon from a NumPy array.
-
-    Args:
-        arr: The NumPy array representing coordinates.
-        verbose: Controls whether to print messages.
-        invert_y: Inverts the y-axis if True.
-
-    Raises:
-        PlotPolyShapeError: If the array cannot be directly converted to a closed polygon.
-    """
-
-    if arr.ndim != 2 or arr.shape[1] != 2:
-        raise PlotPolyShapeError(
-            "NumPy array must have shape (n, 2) for plotting as a polygon."
-        )
-
-    try:
-        # Attempt to create a closed polygon directly
-        poly = Polygon(arr)
-        plot_shapely_poly(poly, invert_y)
-
-    except ValueError:  # Array might not form a closed polygon
-        if verbose:
-            print("Array doesn't form a closed polygon. Trying to concatenate...")
-        try:
-            poly = Polygon(np.concatenate(arr, axis=0))
-            plot_shapely_poly(poly, invert_y)
-        except ValueError:
-            raise PlotPolyShapeError(
-                "NumPy array is not compatible with polygon plotting."
-            )
+def plot_shapely_entity(ax, entity):
+    if hasattr(entity, "geoms"):  # Works for both GeometryCollection and MultiPolygon
+        for geom in entity.geoms:
+            plot_polygon_with_holes(ax, geom)
+    elif isinstance(entity, Polygon):
+        plot_polygon_with_holes(ax, entity)
+    else:
+        raise TypeError(f"Unsupported Shapely geometry type: {type(entity)}")
 
 
-def plot_shapely_poly(poly, verbose=False, invert_y=True):
-    """Plot a shapely Polygon, including those with holes."""
-    _, ax = plt.subplots()
-    if invert_y:
-        ax.invert_yaxis()
-
+def plot_polygon_with_holes(ax, polygon):
+    """Plot a single polygon, including any holes, on the provided axes."""
     # Plot the exterior
-    exterior_coords = poly.exterior.coords.xy
-    ax.plot(exterior_coords[0], exterior_coords[1], "b")
+    exterior_coords = polygon.exterior.coords.xy
+    ax.plot(exterior_coords[0], exterior_coords[1], "b")  # Blue for exterior
 
-    # Plot each hole as a separate path
-    for hole in poly.interiors:
+    # Plot each hole
+    for hole in polygon.interiors:
         hole_coords = hole.coords.xy
-        ax.plot(hole_coords[0], hole_coords[1], "r")
-
-    ax.set_aspect("equal", "box")  # Set aspect ratio to be equal.
-    plt.show()
-
-
-def plot_shapely_multipoly(multipoly, verbose=False, invert_y=True):
-    """Plot a shapely MultiPolygon."""
-    if invert_y:
-        plt.gca().invert_yaxis()
-    for geom in multipoly.geoms:
-        plt.plot(*geom.exterior.xy)
-
-    plt.gca().axis("equal")
-    plt.show()
-
-
-def plot_shapely_geometry_collection(gc, verbose=False, invert_y=True):
-    """Plot a shapely GeometryCollection."""
-    for geom in gc.geoms:
-        plotpoly(geom, verbose, invert_y)
-
-
-def plot_dict(obj, verbose=False, invert_y=True):
-    """Plot polygons from dictionary values."""
-    for _, v in obj.items():
-        plotpoly(v, verbose, invert_y)
-
-
-def plot_list(obj, verbose=False, invert_y=True):
-    """Plot polygons from list elements."""
-    for item in obj:
-        plotpoly(item, verbose=verbose, invert_y=invert_y)
-
-
-def plot_str(obj, verbose=False, invert_y=True):
-    """Plot polygon from WKT string."""
-    try:
-        poly = wkt.loads(obj)
-        plot_shapely_poly(poly, verbose=verbose, invert_y=invert_y)
-    except wkt.WKTReadingError as e:
-        raise ValueError(f"String not wkt: {obj=}") from e
-    except (ValueError, TypeError) as e:
-        print(f"Error converting input to polygon: {e}")
-
-
-def plot_tuple(obj, verbose=False, invert_y=True):
-    """Plot polygon from tuple."""
-    plt.plot(*obj)
-    plt.show()
+        ax.plot(hole_coords[0], hole_coords[1], "r")  # Red for holes
