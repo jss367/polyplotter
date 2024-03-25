@@ -84,10 +84,21 @@ def plot_ndarray_poly(arr: np.ndarray, verbose=False, invert_y=True):
 
 
 def plot_shapely_poly(poly, verbose=False, invert_y=True):
-    """Plot a shapely Polygon."""
+    """Plot a shapely Polygon, including those with holes."""
+    _, ax = plt.subplots()
     if invert_y:
-        plt.gca().invert_yaxis()
-    plt.plot(*poly.exterior.xy)
+        ax.invert_yaxis()
+
+    # Plot the exterior
+    exterior_coords = poly.exterior.coords.xy
+    ax.plot(exterior_coords[0], exterior_coords[1], "b")
+
+    # Plot each hole as a separate path
+    for hole in poly.interiors:
+        hole_coords = hole.coords.xy
+        ax.plot(hole_coords[0], hole_coords[1], "r")
+
+    ax.set_aspect("equal", "box")  # Set aspect ratio to be equal.
     plt.show()
 
 
