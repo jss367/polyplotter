@@ -67,18 +67,11 @@ def plotpoly(obj, verbose=False, invert_y=True):
 
 
 def plot_shapely_entity(ax, entity):
-    """Plot a single Shapely entity (Polygon, MultiPolygon, or GeometryCollection) including those with holes."""
-    if isinstance(entity, GeometryCollection):
-        if len(entity.geoms) == 0:
-            print("GeometryCollection is empty, skipping plot.")
-            return
+    if hasattr(entity, "geoms"):  # Works for both GeometryCollection and MultiPolygon
         for geom in entity.geoms:
             plot_polygon_with_holes(ax, geom)
     elif isinstance(entity, Polygon):
         plot_polygon_with_holes(ax, entity)
-    elif isinstance(entity, MultiPolygon):
-        for geom in entity.geoms:  # Correctly access the polygons in a MultiPolygon
-            plot_polygon_with_holes(ax, geom)
     else:
         raise TypeError(f"Unsupported Shapely geometry type: {type(entity)}")
 
