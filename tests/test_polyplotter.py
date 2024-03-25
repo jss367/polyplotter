@@ -1,4 +1,5 @@
 import matplotlib
+import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 from shapely import wkt  # required to access shapely.wkt
@@ -15,7 +16,9 @@ def test_empty_geom_collection():
 
 
 def test_simple_wkt():
-    simple_poly_wkt = "POLYGON ((45 58, 46 59, 57 55, 54 46, 44 49, 46 53, 44 54, 45 58))"
+    simple_poly_wkt = (
+        "POLYGON ((45 58, 46 59, 57 55, 54 46, 44 49, 46 53, 44 54, 45 58))"
+    )
     p(simple_poly_wkt)
 
 
@@ -25,7 +28,9 @@ def test_square_wkt():
 
 
 def test_simple_poly():
-    simple_poly_wkt = "POLYGON ((45 58, 46 59, 57 55, 54 46, 44 49, 46 53, 44 54, 45 58))"
+    simple_poly_wkt = (
+        "POLYGON ((45 58, 46 59, 57 55, 54 46, 44 49, 46 53, 44 54, 45 58))"
+    )
     simple_poly = wkt.loads(simple_poly_wkt)
     empty_shape = wkt.loads("GEOMETRYCOLLECTION EMPTY")
     empty_geometry_collection = empty_shape.intersection(simple_poly)
@@ -66,14 +71,20 @@ def test_plot_shapely_poly():
 
 def test_plot_shapely_multipoly():
     multipoly = MultiPolygon(
-        [Polygon([[1, 1], [2, 1], [2, 2], [1, 2], [1, 1]]), Polygon([[3, 3], [4, 3], [4, 4], [3, 4], [3, 3]])]
+        [
+            Polygon([[1, 1], [2, 1], [2, 2], [1, 2], [1, 1]]),
+            Polygon([[3, 3], [4, 3], [4, 4], [3, 4], [3, 3]]),
+        ]
     )
     p(multipoly)
 
 
 def test_plot_shapely_geometry_collection():
     gc = GeometryCollection(
-        [Polygon([[1, 1], [2, 1], [2, 2], [1, 2], [1, 1]]), Polygon([[3, 3], [4, 3], [4, 4], [3, 4], [3, 3]])]
+        [
+            Polygon([[1, 1], [2, 1], [2, 2], [1, 2], [1, 1]]),
+            Polygon([[3, 3], [4, 3], [4, 4], [3, 4], [3, 3]]),
+        ]
     )
     p(gc)
 
@@ -87,12 +98,18 @@ def test_plot_dict():
 
 
 def test_plot_list_of_polys():
-    list_obj = [Polygon([[1, 1], [2, 1], [2, 2], [1, 2], [1, 1]]), Polygon([[3, 3], [4, 3], [4, 4], [3, 4], [3, 3]])]
+    list_obj = [
+        Polygon([[1, 1], [2, 1], [2, 2], [1, 2], [1, 1]]),
+        Polygon([[3, 3], [4, 3], [4, 4], [3, 4], [3, 3]]),
+    ]
     p(list_obj)
 
 
 def test_plot_list_of_wkts():
-    list_obj = ["POLYGON ((4 5, 5 5, 5 4, 4 4, 4 5))", "POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0))"]
+    list_obj = [
+        "POLYGON ((4 5, 5 5, 5 4, 4 4, 4 5))",
+        "POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0))",
+    ]
     p(list_obj)
 
 
@@ -104,6 +121,27 @@ def test_plot_str():
 def test_plot_tuple():
     tuple_obj = ([1, 2, 3, 4], [1, 2, 3, 4])
     p(tuple_obj)
+
+
+@pytest.mark.skip(reason="This test requires manual verification and is not automated.")
+def test_polygon_with_hole_MANUAL_TEST():
+    """
+    This test must be verified manually. I skip it by default.
+    """
+    matplotlib.use("TkAgg")
+    # Define the exterior of the polygon
+    exterior = [(0, 0), (5, 0), (5, 5), (0, 5), (0, 0)]
+    # Define a hole in the polygon
+    hole = [(1, 1), (4, 1), (4, 4), (1, 4), (1, 1)]
+    # Create the polygon with the hole
+    poly_with_hole = Polygon(shell=exterior, holes=[hole])
+
+    # Plot the polygon
+    p(poly_with_hole, verbose=True, invert_y=False)
+
+    # Instructions for manual verification;
+    print("Verify the plotted polygon does NOT fill in the specified hole.")
+    plt.show()
 
 
 if __name__ == "__main__":
