@@ -123,7 +123,7 @@ def test_plot_tuple():
     p(tuple_obj)
 
 
-# @pytest.mark.skip(reason="This test requires manual verification and is not automated.")
+@pytest.mark.skip(reason="This test requires manual verification and is not automated.")
 def test_polygon_with_hole_MANUAL_TEST():
     """
     This test must be verified manually. I skip it by default.
@@ -144,7 +144,7 @@ def test_polygon_with_hole_MANUAL_TEST():
     plt.show()
 
 
-# @pytest.mark.skip(reason="This test requires manual verification and is not automated.")
+@pytest.mark.skip(reason="This test requires manual verification and is not automated.")
 def test_list_with_holes_MANUAL_TEST():
     """
     This test must be verified manually. I skip it by default.
@@ -173,7 +173,7 @@ def test_list_with_holes_MANUAL_TEST():
     plt.show()
 
 
-# @pytest.mark.skip(reason="This test requires manual verification and is not automated.")
+@pytest.mark.skip(reason="This test requires manual verification and is not automated.")
 def test_wkt_with_holes_MANUAL_TEST():
     """
     This test must be verified manually. I skip it by default.
@@ -191,7 +191,7 @@ def test_wkt_with_holes_MANUAL_TEST():
     plt.show()
 
 
-# @pytest.mark.skip(reason="This test requires manual verification and is not automated.")
+@pytest.mark.skip(reason="This test requires manual verification and is not automated.")
 def test_multipoly_with_holes_MANUAL_TEST():
     """
     This test must be verified manually. I skip it by default.
