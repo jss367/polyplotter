@@ -1,5 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
+from shapely import wkt
 from shapely.geometry import GeometryCollection, MultiPolygon, Polygon
 from shapely.wkt import loads as load_wkt
 
