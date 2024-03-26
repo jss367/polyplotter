@@ -137,7 +137,7 @@ def test_polygon_with_hole_MANUAL_TEST():
     poly_with_hole = Polygon(shell=exterior, holes=[hole])
 
     # Plot the polygon
-    p(poly_with_hole, verbose=True, invert_y=False)
+    p(poly_with_hole, verbose=False, invert_y=False)
 
     # Instructions for manual verification;
     print("Verify the plotted polygon does NOT fill in the specified hole.")
@@ -166,7 +166,43 @@ def test_list_with_holes_MANUAL_TEST():
     list_with_holes = [poly_with_hole1, poly_with_hole2]
 
     # Plot the polygon
-    p(list_with_holes, verbose=True, invert_y=False)
+    p(list_with_holes, verbose=False, invert_y=False)
+
+    # Instructions for manual verification;
+    print("Verify the plotted polygon does NOT fill in the specified hole.")
+    plt.show()
+
+
+# @pytest.mark.skip(reason="This test requires manual verification and is not automated.")
+def test_wkt_with_holes_MANUAL_TEST():
+    """
+    This test must be verified manually. I skip it by default.
+    """
+    matplotlib.use("TkAgg")
+
+    list_with_holes = [
+        "POLYGON((0 0, 10 0, 10 10, 0 10, 0 0), (2 2, 4 2, 4 4, 2 4, 2 2), (6 6, 8 6, 8 8, 6 8, 6 6))",
+        "POLYGON((2.5 2.5, 3.5 2.5, 3.5 3.5, 2.5 3.5, 2.5 2.5), (3 3, 3.2 3, 3.2 3.2, 3 3.2, 3 3))",
+    ]
+
+    # Plot the polygon
+    p(list_with_holes, verbose=False, invert_y=False)
+
+    plt.show()
+
+
+# @pytest.mark.skip(reason="This test requires manual verification and is not automated.")
+def test_multipoly_with_holes_MANUAL_TEST():
+    """
+    This test must be verified manually. I skip it by default.
+    """
+    matplotlib.use("TkAgg")
+    # Define the exterior of the polygon
+
+    multipoly_with_holes = "MULTIPOLYGON(((0 0, 10 0, 10 10, 0 10, 0 0), (2 2, 4 2, 4 4, 2 4, 2 2), (6 6, 8 6, 8 8, 6 8, 6 6)), ((2.5 2.5, 3.5 2.5, 3.5 3.5, 2.5 3.5, 2.5 2.5), (3 3, 3.2 3, 3.2 3.2, 3 3.2, 3 3)))"
+
+    # Plot the polygon
+    p(multipoly_with_holes, verbose=False, invert_y=False)
 
     # Instructions for manual verification;
     print("Verify the plotted polygon does NOT fill in the specified hole.")
